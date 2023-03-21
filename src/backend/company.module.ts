@@ -1,0 +1,17 @@
+import { CompanyService } from './company.service';
+/*
+https://docs.nestjs.com/modules
+*/
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Company } from './entities/company.entity';
+import { CompanyController } from './company.controller';
+
+@Module({
+    imports: [TypeOrmModule.forFeature([Company])],
+    controllers: [CompanyController],
+    providers: [
+        CompanyService,],
+})
+export class CompanyModule { }

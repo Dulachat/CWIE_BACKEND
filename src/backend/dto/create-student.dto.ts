@@ -1,0 +1,37 @@
+export class CreateStudentDto {
+    id:number;
+    age:number;
+    branch_id:string;
+    dateofbirth:Date ;
+    email :string;
+    emergency_person_fname  :string;
+    emergency_person_lname :string;
+    emergency_tel:string;
+    expiry_date:Date;
+    facebook:string;
+    fname_EN:string;
+    fname_TH:string;
+    id_card:string;
+    issue_at:string;
+    issue_date:Date;
+    lname_EN:string;
+    lname_TH:string;
+    nationality:string;
+    p_height:number;
+    p_weight:number;
+    pwd:string;
+    race:string;
+    religion:string;
+    sex:string;
+    student_group:string;
+    student_id:string;
+    tel:string;
+    username:string;
+    address_no:string;
+    sub_district:string;
+    district:string;
+    moo:string;
+    postal_code:string;
+    road:string;
+    province:string;
+}
