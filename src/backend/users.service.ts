@@ -6,15 +6,24 @@ import { CreateUsersDto } from './dto/create-users.dto';
 import { Users } from './entities/users.entity';
 import * as bcrypt from 'bcrypt';
 import { UpdateUsersDto } from './dto/update-users.dto';
+
 @Injectable()
 export class UsersService {
-    constructor(@InjectRepository(Users)
-    private usersRepository: Repository<Users>
+    constructor(
+        @InjectRepository(Users)
+        private readonly usersRepository: Repository<Users>
     ) { }
 
     findAll() {
         return this.usersRepository.find({
             relations: ["branchJoinUser", "userLevelJoin", "companyJoin"]
+        })
+    }
+
+    findUserCompany(id: any) {
+        return this.usersRepository.find({
+            where: { company_id: id },
+            relations: ["companyJoin"]
         })
     }
 
@@ -24,6 +33,32 @@ export class UsersService {
             relations: ["branchJoinUser", "userLevelJoin", "companyJoin"]
         })
     }
+
+    findOneAuth(id: number, username: string) {
+        return this.usersRepository.findOne({
+            where: {
+                id: id,
+                username: username
+            },
+            relations: ["branchJoinUser", "userLevelJoin", "companyJoin"]
+        })
+    }
+
+    async findAuth(condition: any): Promise<Users> {
+        return this.usersRepository.findOne({
+            where: { username: condition.username }
+        })
+    }
+    findSelect(branch_id: string) {
+        return this.usersRepository.find({
+            where: {
+                branch_id: branch_id
+            }
+        })
+    }
+
+
+
 
     async create(createUsersDto: CreateUsersDto) {
         const check = await this.usersRepository.findOne({
@@ -48,8 +83,7 @@ export class UsersService {
         const findUser = await this.usersRepository.findOne({
             where: { id: id }
         })
-
-        await this.usersRepository.update(id, updateStudentDto);
+        await this.usersRepository.update(findUser.id, updateStudentDto);
         return "success"
     }
 

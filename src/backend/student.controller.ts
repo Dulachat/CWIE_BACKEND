@@ -17,6 +17,14 @@ export class StudentController {
     findOne(@Param('id') id: number) {
         return this.studentService.findOne(id);
     }
+    @Get("allStudentIntern")
+    findOneIntern() {
+        return this.studentService.findIntern();
+    }
+    @Get("getByBranch/:userId/:company_id")
+    findByListDiary(@Param('userId') userId: string, @Param('company_id') company_id: string) {
+        return this.studentService.findByListDiary({ userId: userId, company_id: company_id });
+    }
 
     @Post('register')
     async create(@Body() createStudentDto: CreateStudentDto) {
@@ -26,6 +34,10 @@ export class StudentController {
     @Patch('updateStudent/:id')
     update(@Param('id') id: number, @Body() updateStudentDto: UpdateStudentDto) {
         return this.studentService.updateStudent(id, updateStudentDto)
+    }
+    @Patch('updateStudentIntern/:id')
+    updateIntern(@Param('id') id: number, @Body() updateStudentDto: UpdateStudentDto) {
+        return this.studentService.updateStudentIntern(id, updateStudentDto)
     }
 
     @Delete('deleteStudent/:id')

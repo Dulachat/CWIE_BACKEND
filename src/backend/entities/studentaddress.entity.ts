@@ -1,26 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column,OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
 import { Student } from './student.entity';
 
 @Entity()
 export class studentAddress {
     @PrimaryGeneratedColumn()
     id: number;
-    @Column()
-    address_no : string;
-    @Column()
-    moo:string;
-    @Column()
-    road:string;
-    @Column()
-    sub_district:string;
-    @Column()
-    district:string;
-    @Column()
-    province:string;
-    @Column()
-    postal_code:string;
-    
+    @Column({ nullable: true })
+    address_no: string;
+    @Column({ nullable: true })
+    moo: string;
+    @Column({ nullable: true })
+    road: string;
+    @Column({ nullable: true })
+    sub_district: string;
+    @Column({ nullable: true })
+    district: string;
+    @Column({ nullable: true })
+    province: string;
+    @Column({ nullable: true })
+    postal_code: string;
 
-    
+
 
 }

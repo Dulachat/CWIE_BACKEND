@@ -2,6 +2,7 @@ export class CreateStudentDto {
     id:number;
     age:number;
     branch_id:string;
+    title_name:string;
     dateofbirth:Date ;
     email :string;
     emergency_person_fname  :string;
@@ -34,4 +35,6 @@ export class CreateStudentDto {
     postal_code:string;
     road:string;
     province:string;
+    intern_status:string;
+    evaluator2_id:any;
 }
