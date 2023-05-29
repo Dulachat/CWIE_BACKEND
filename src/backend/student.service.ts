@@ -38,9 +38,20 @@ export class StudentService {
         });
 
     }
+    findOneUid(uuid: string): Promise<Student> {
+        return this.StudentRepository.findOne({
+            where: { uuid: uuid },
+            relations: ["address"]
+
+        });
+
+    }
     findIntern() {
         return this.StudentRepository.find({
-            where: { waitings_status: "0" },
+            where: {
+                waitings_status: "0",
+                intern_status: "0"
+            },
             relations: ["address"]
         });
 
@@ -49,7 +60,7 @@ export class StudentService {
     async findByListDiary(data) {
 
         if (data.company_id != 'null') {
-             //  console.log("พี่เลี้ยง")
+            //  console.log("พี่เลี้ยง")
             const dataDetail = await this.assessmentDetailRepository.find({
                 where: { company_id: data.company_id },
                 relations: { JoinStudent: true, JoinCompany: true, JoinEvaluator1: true, JoinEvaluator2: true },
@@ -57,7 +68,7 @@ export class StudentService {
             for (let i in dataDetail) {
                 let stuData = await this.StudentRepository.findOne({
                     where: { id: dataDetail[i].student_id },
-                    relations: ["branchJoin", "address","Diary"]
+                    relations: ["branchJoin", "address", "Diary"]
 
                 })
                 //     console.log(stuData)
@@ -65,7 +76,7 @@ export class StudentService {
             }
             return dataDetail
         } else if (data.company_id === "null") {
-              // console.log("อาจารย์")
+            // console.log("อาจารย์")
             const dataDetail = await this.assessmentDetailRepository.find({
                 where: { evaluator1_id: data.userId },
                 relations: { JoinStudent: true, JoinCompany: true, JoinEvaluator1: true, JoinEvaluator2: true },
@@ -74,7 +85,7 @@ export class StudentService {
             for (let item of dataDetail) {
                 let stuData = await this.StudentRepository.findOne({
                     where: { id: (item.student_id), waitings_status: "1" },
-                    relations: ["branchJoin", "address","Diary"]
+                    relations: ["branchJoin", "address", "Diary"]
 
                 })
                 item.JoinStudent = stuData
@@ -116,8 +127,6 @@ export class StudentService {
             relations: ["address"]
         });
 
-
-
         const updateAddress = new studentAddress();
         updateAddress.address_no = updateStudentDto.address_no;
         updateAddress.sub_district = updateStudentDto.sub_district;
@@ -155,8 +164,7 @@ export class StudentService {
         updateStudentData.sex = updateStudentDto.sex;
         updateStudentData.p_height = updateStudentDto.p_height;
         updateStudentData.p_weight = updateStudentDto.p_weight;
-
-
+        updateStudentData.intern_status = updateStudentDto.intern_status;
         return await this.StudentRepository.update(id, updateStudentData)
     }
 
@@ -213,7 +221,6 @@ export class StudentService {
         updateStudentData.p_height = updateStudentDto.p_height;
         updateStudentData.p_weight = updateStudentDto.p_weight;
 
-
         return await this.StudentRepository.update(id, updateStudentData)
     }
     //addStudent
@@ -222,9 +229,11 @@ export class StudentService {
         const check = await this.StudentRepository.findOne({
             where: { username: createStudentDto.username, student_id: createStudentDto.student_id }
         })
-        if (check != null) {
-            return "error"
-        } if (check == null) {
+        let dataObj = ""
+        if (check !== null) {
+            dataObj = "error"
+        }
+        else if (check === null) {
             const Address = new studentAddress();
             await this.StudentRepository.manager.save(Address)
             const salt = await bcrypt.genSalt();
@@ -241,10 +250,11 @@ export class StudentService {
             StudentData.tel = createStudentDto.tel;
             StudentData.email = createStudentDto.email;
             StudentData.address = Address;
+            StudentData.intern_status = createStudentDto.intern_status;
             await this.StudentRepository.manager.save(StudentData)
-            return "success";
+            dataObj = "success";
         }
-
+        return dataObj;
     }
 
     //delete a student

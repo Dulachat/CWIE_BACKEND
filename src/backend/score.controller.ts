@@ -1,5 +1,5 @@
 
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post ,Get} from '@nestjs/common';
 import { CreateScoreForm08Dto } from './dto/create-scoreForm08.dto';
 import { ScoreService } from './score.service';
 import { CreateScoreForm09Dto } from './dto/create-scoreForm09.dto';
@@ -17,4 +17,5 @@ export class ScoreController {
     createForm09(@Param('student_id') id:any, @Body() createScoreForm09Dto: CreateScoreForm09Dto) {
         return this.scoreService.createForm09(id,createScoreForm09Dto)
     }
+
 }

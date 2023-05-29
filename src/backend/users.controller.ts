@@ -22,6 +22,10 @@ export class UsersController {
     findOne(@Param("id") id: number) {
         return this.usersService.findOne(id);
     }
+    @Get('oneUsersByUid/:uuid')
+    findOneByUID(@Param("uuid") uuid: string) {
+        return this.usersService.findOneUUID(uuid);
+    }
 
     @Post('createUsers')
     create(@Body() createUsersDto: CreateUsersDto) {

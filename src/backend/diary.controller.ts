@@ -35,7 +35,7 @@ export class DiaryController {
         })
     }))
     uploadFile(@UploadedFile() file) {
-        return `http://localhost:3800/API/Diary/uploads/${file.filename}`
+        return `${process.env.CWIE_API_URL}/Diary/uploads/${file.filename}`
     }
 
     @Get('uploads/:image')
@@ -57,6 +57,11 @@ export class DiaryController {
     @Get('oneDiaryId/:id')
     getOneDiaryId(@Param('id') id: any) {
         return this.diaryService.findOneId(id);
+    }
+
+    @Get('ListDiary/:id')
+    getListDiaryId(@Param('id') id: any) {
+        return this.diaryService.findById(id);
     }
 
 

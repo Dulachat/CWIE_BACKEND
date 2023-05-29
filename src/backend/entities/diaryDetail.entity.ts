@@ -6,7 +6,7 @@ export class DiaryDetail {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column('text')
+    @Column({type:"text", nullable:true})
     detail_text:string;
 
 }

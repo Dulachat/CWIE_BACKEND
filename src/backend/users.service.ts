@@ -33,6 +33,13 @@ export class UsersService {
             relations: ["branchJoinUser", "userLevelJoin", "companyJoin"]
         })
     }
+    
+    findOneUUID(uuid: string) {
+        return this.usersRepository.findOne({
+            where: { uuid: uuid },
+            relations: ["branchJoinUser", "userLevelJoin", "companyJoin"]
+        })
+    }
 
     findOneAuth(id: number, username: string) {
         return this.usersRepository.findOne({

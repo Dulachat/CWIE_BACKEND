@@ -4,7 +4,6 @@ https://docs.nestjs.com/providers#services
 
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import error from 'next/error';
 import { Repository } from 'typeorm';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -42,17 +41,13 @@ export class CompanyService {
     }
 
     async update(id: number, updateCompanyDto: UpdateCompanyDto) {
-        const check = await this.companyRepository.findOne({
-            where: { company_name: updateCompanyDto.company_name }
-        })
-        if (check != null) {
-            //  console.log(check)
-            return "error"
-        } if (check === null) {
             await this.companyRepository.update(id, updateCompanyDto);
-            return "success"
-        }
-
+            try{
+                return "success"
+            }catch(err){
+                return "error"
+            }
+          
     }
 
     async remove(id: number) {

@@ -46,6 +46,9 @@ export class Users {
     @Column()
     user_level_id: string
 
+    @Column({nullable:true})
+    profile_image: string
+
     @Column()
     @Generated('uuid')
     uuid: string

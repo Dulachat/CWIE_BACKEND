@@ -21,7 +21,7 @@ export class DiaryService {
 
     findAll() {
         return this.diaryRepository.find({
-            relations: ["Detail","StudentDiary"]
+            relations: ["Detail", "StudentDiary"]
         })
     }
 
@@ -41,36 +41,48 @@ export class DiaryService {
         })
     }
 
-    async create(createDiaryDto: CreateDiaryDto) {
 
-        const diary = await this.diaryRepository.findOne({
-            where: { diary_date: createDiaryDto.diary_date }
+    findById(id: any) {
+        return this.diaryRepository.find({
+            where: { student_id: id },
+            relations: ["Detail", "StudentDiary"],
+            order: { diary_date: 'DESC' }
         })
+    }
 
-        if (diary != null) {
-            return diary
+    async create(createDiaryDto: CreateDiaryDto) {
+        try {
+            const diary = await this.diaryRepository.findOne({
+                where: { diary_date: createDiaryDto.diary_date }
+            })
+            let dataObj = {}
+            if (diary !== null) {
+                return diary
+            }
+            if (diary === null) {
+                const newDetail = new DiaryDetail();
+                const newDiary = new Diary();
+                newDiary.diary_date = createDiaryDto.diary_date
+                newDiary.student_id = createDiaryDto.student_id
+                newDiary.Detail = newDetail
+                return await this.diaryRepository.manager.save(newDiary)
+            }
+        } catch (error) {
+            return error
         }
-        if (diary === null) {
-            const newDetail = new DiaryDetail()
-            const newDiary = new Diary()
-            newDiary.diary_date = createDiaryDto.diary_date
-            newDiary.student_id = createDiaryDto.student_id
-            newDiary.Detail = newDetail
-            return this.diaryRepository.save(newDiary)
-        }
+
+
 
     }
 
     async update(date: any, createDiaryDto: CreateDiaryDto) {
-
-
         const dateSelect = await this.diaryRepository.findOne({
             where: { diary_date: date },
             relations: ["Detail"]
         })
-
         dateSelect.time_in = createDiaryDto.time_in
         dateSelect.time_out = createDiaryDto.time_out
+        dateSelect.diary_comment = createDiaryDto.diary_comment
         const findDetail = await this.diaryDetailRepository.findOne({
             where: { id: parseInt(dateSelect.diary_detail_id) }
         })

@@ -10,4 +10,5 @@ export class CreateUsersDto {
     branch_id:string;
     company_id:string;
     user_level:string;
+    image_profile:string;
 }

@@ -17,6 +17,12 @@ export class StudentController {
     findOne(@Param('id') id: number) {
         return this.studentService.findOne(id);
     }
+
+    @Get("oneStudentUid/:uuid")
+    findOneUid(@Param('uuid') uuid: string) {
+        return this.studentService.findOneUid(uuid);
+    }
+
     @Get("allStudentIntern")
     findOneIntern() {
         return this.studentService.findIntern();

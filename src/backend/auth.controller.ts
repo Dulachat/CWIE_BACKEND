@@ -16,49 +16,46 @@ export class AuthController {
     @Post('login')
     async login(
         @Body('username') username: string,
-        @Body('pwd') pwd: string,
+        @Body('pwd') pwdData: string,
         @Res({ passthrough: true }) response: Response
 
     ) {  // login verification username and compare password
         const user = await this.authService.findAuth({ username })
-        //  console.log(user);
         if (!user) {
             throw new BadRequestException('invalid username')
         }
-        if (!await bcrypt.compare(pwd, user.pwd)) {
+        if (!await bcrypt.compare(pwdData, user.pwd)) {
             throw new BadRequestException('invalid password')
         }
-
-        const jwt = await this.jwtService.signAsync({ id: user.id ,username: user.username})
-
-        response.cookie('jwt', jwt, { httpOnly: true });
-        return jwt
-    }
-
-    @Get('user')
-    async user(@Req() request: Request) {
-        //  console.log(request);
-        try {
-            const cookie = request.cookies["jwt"];
-            const data = await this.jwtService.verifyAsync(cookie);  // verify cookie เพื่อนำไปใช้งาน
-            if (!data) {
-                throw new UnauthorizedException();
-            }
-
-            const user = await this.authService.findOne({ id: data['id'], username: data['username'] });
-            const { pwd, ...result } = user;
-            return result;
-        } catch (e) {
+        const jwt = await this.jwtService.signAsync({ id: user.id, username: user.username })
+        response.cookie('jwt', jwt, { httpOnly: true, expires: new Date() },);
+        const data = await this.jwtService.verifyAsync(jwt);
+        if (!data) {
             throw new UnauthorizedException();
         }
+        const userData = await this.authService.findOne({ id: data['id'], username: data['username'] });
+        const { pwd, ...result } = userData;
+        return result;
 
     }
+
+    // @Get('user')
+    // async user(@Req() request: Request) {
+    //     try {
+
+    //         const cookie = request.cookies["jwt"];
+    //         const data = await this.jwtService.verifyAsync(cookie);  // verify cookie เพื่อนำไปใช้งาน
+
+    //     } catch (e) {
+    //         throw e
+    //     }
+    // }
 
     @Post('logout')
     async logout(
         @Res({ passthrough: true }) response: Response
     ) {
-        response.clearCookie('jwt');
+        response.clearCookie('jwt', { path: '/' })
         return { data: "success" }
     }
 }

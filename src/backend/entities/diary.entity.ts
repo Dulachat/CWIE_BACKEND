@@ -22,6 +22,9 @@ export class Diary {
     @Column()
     student_id: string
 
+    @Column({nullable:true})
+    diary_comment: string
+
     @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP", nullable: true })
     view_at: string
     @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP", nullable: true })
@@ -33,7 +36,7 @@ export class Diary {
     @JoinColumn({name:"diary_detail_id",referencedColumnName:"id",})
     Detail:DiaryDetail
 
-    @ManyToOne(()=>Student,(student)=>student.Diary)
+    @ManyToOne(()=>Student,(student)=>student.Diary,{cascade:true})
     @JoinColumn({name:'student_id',referencedColumnName:"id"})
     StudentDiary:Student
 }

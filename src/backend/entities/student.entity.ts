@@ -8,7 +8,8 @@ import { Diary } from './diary.entity';
 
 export enum InternStatus {
     CooperativeEducation = "0",
-    PracticeExperience = "1"
+    PracticeExperience = "1",
+    NotSelected = "2" 
 }
 
 export enum UserStatus {
@@ -59,9 +60,9 @@ export class Student {
     id_card: string;
     @Column({ nullable: true })
     issue_at: string;
-    @Column('date')
+    @Column({type:'date', nullable: true })
     issue_date: Date;
-    @Column('date')
+    @Column({type:'date', nullable: true })
     expiry_date: Date;
     @Column({ nullable: true })
     race: string;
@@ -69,7 +70,7 @@ export class Student {
     nationality: string;
     @Column({ nullable: true })
     religion: string;
-    @Column('date')
+    @Column({type:'date', nullable: true })
     dateofbirth: Date;
     @Column({ nullable: true })
     age: number;
@@ -83,7 +84,7 @@ export class Student {
     address_id: number;
     @Column()
     branch_id: string;
-    @Column({ type: "enum", enum: [InternStatus.CooperativeEducation, InternStatus.PracticeExperience], nullable: true })  // internStatus
+    @Column({ type: "enum", enum: [InternStatus.CooperativeEducation, InternStatus.PracticeExperience,InternStatus.NotSelected], nullable: true })  // internStatus
     intern_status: string;
 
     @Column({ type: "enum", enum: [waitingsStatus.WAIT, waitingsStatus.INTERN, waitingsStatus.FINISH], default: waitingsStatus.WAIT, nullable: true })  //waiting intern
@@ -91,6 +92,9 @@ export class Student {
 
     @Column({ type: "enum", enum: [UserStatus.ON, UserStatus.OFF], default: UserStatus.ON, nullable: true })  //
     status: string
+
+    @Column({nullable:true})
+    profile_image: string
 
     @Column()
     @Generated('uuid')
