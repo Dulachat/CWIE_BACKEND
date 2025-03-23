@@ -1,29 +1,50 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Users } from './users.entity';
 import { AssessmentDetail } from './assessmentDetail.entity';
 
 @Entity()
 export class Company {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    company_name: string;
+  @Column()
+  company_name: string;
 
-    @Column("text")
-    company_address: string;
+  @Column({ nullable: true, type: 'text' })
+  company_address: string;
 
-    @Column()
-    company_email: string;
+  @Column({ nullable: true })
+  company_email: string;
 
-    @Column()
-    company_tel: string;
+  @Column({ nullable: true })
+  company_tel: string;
 
-    @OneToMany(() => Users, (users) => users.userLevelJoin, { onDelete: "DEFAULT" })
-    @JoinColumn()
-    usersJoin: Users
+  @Column({ type: 'text', nullable: true })
+  maps_img: string;
 
-    @OneToMany(() => AssessmentDetail, (asDetail) => asDetail.JoinCompany, { onDelete: "DEFAULT" })
-    @JoinColumn()
-    asJoin: AssessmentDetail
+  @Column({ type: 'text', nullable: true })
+  maps_url: string;
+
+  @Column({ type: 'text', nullable: true })
+  maps_detail: string;
+
+  @OneToMany(() => Users, (users) => users.userLevelJoin, {
+    onDelete: 'DEFAULT',
+    nullable: true,
+  })
+  @JoinColumn()
+  usersJoin: Users;
+
+  @OneToMany(() => AssessmentDetail, (asDetail) => asDetail.JoinCompany, {
+    onDelete: 'DEFAULT',
+    nullable: true,
+  })
+  @JoinColumn()
+  asJoin: AssessmentDetail;
 }

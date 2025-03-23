@@ -1,0 +1,478 @@
+<html lang='th'>
+
+<head>
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+  <title>บันทึกการปฏิบัติงาน</title>
+  <link rel='stylesheet' href='style.css' />
+  <link href='https://fonts.googleapis.com/css?family=Sarabun' rel='stylesheet' />
+  <style>
+    .page-break {
+      page-break-before: always;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .start {
+      text-align: center;
+    }
+
+    .start1 {
+      text-align: center;
+    }
+
+    .start2 {
+      text-align: center;
+      color: darkred;
+    }
+
+    .header3 {
+      font-size: 12pt;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .header4 {
+      margin-top: 20px;
+      font-size: 16pt;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .header5 {
+      margin-top: 80px;
+      font-size: 16pt;
+      font-weight: bold;
+    }
+
+    .header2 {
+      font-size: 12pt;
+      font-weight: bold;
+    }
+
+    .text2 {
+      margin-top: 20px;
+      color:
+        #000000;
+      font-size: 16pt;
+      position: absolute;
+      text-align: center;
+      bottom:
+        20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .text3 {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      font-size: 16pt;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    p {
+      line-height: 1.5;
+      font-family: "Sarabun";
+      font-size: 10pt;
+    }
+
+    table {
+      width: 100%;
+      border:
+        none;
+      margin: 5%;
+    }
+
+    th {
+      font-size: 14pt;
+      padding: 5px;
+    }
+
+    td {
+      padding-top: 1rem;
+    }
+
+    .entry-content>p>img {
+      width: 90%;
+      height: 9cm;
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+  </header>
+  <main class='center'>
+    <div>
+      <div>
+        <div class='start'>
+          <img
+            src='https://upload.wikimedia.org/wikipedia/th/thumb/1/12/Loei_Rajabhat_University_Logo.png/150px-Loei_Rajabhat_University_Logo.png'
+            alt='โลโก้มหาวิทยาลัยราชภัฏเลย' style='width: 100px;' />
+          <img
+            src='https://api.idmis.lru.ac.th/api/uploads/faculty.jpg'
+            alt='โลโก้อุต' style='width: 130px;' />
+        </div>
+        <div class='center'>
+          <p class='header4' style='margin-top:50px ;'>คณะเทคโนโลยีอุตสาหกรรม</p>
+          <p class='header4'>มหาวิทยาลัยราชภัฏเลย</p>
+          <div class='start2'>
+            <p class='header4'> รายงาน</p>
+          </div>
+          <p class='header4'>สหกิจศึกษา/ฝึกประสบการณ์วิชาชีพ</p>
+          <p class='header4'>ปีการศึกษา {{term_year}}</p>
+          <div class='center'>
+            <div>
+              <img src={{images}} style='width:6cm; height:auto' alt='' />
+            </div>
+            <div class='start1'>
+              <p class='header4'> โดย</p>
+            </div>
+            <p class='header4'>{{title_name}} {{ fname_TH }} {{ lname_TH }}</p>
+            <p class='header4'>รหัสนักศึกษา {{student_id}}</p>
+            <p class='header4'>หมู่เรียน {{student_group}}</p>
+            <p class='header4'>{{branch_name}}</p>
+          </div>
+          <div class='page-break'>
+            <div>
+              <p class='header2'>ข้อมูลส่วนตัวนักศึกษาสหกิจศึกษา</p>
+            </div>
+            <div style='display: flex; justify-content:end; margin-right:20px'>
+              <img src='' alt='' style=' width: 
+                  2cm; height: 2.5cm;' />
+            </div>
+            <table i='table1' cellspacing='0' cellpadding='0' style='margin-top: -20px;'>
+              <tr>
+                <th style='width: 30%;'></th>
+                <th style='width: 30%;'></th>
+                <th style='width: 40%;'></th>
+              </tr>
+              <tr>
+                <td colspan='2'>
+                  <p>ชื่อ-นามสกุล
+                  </p>
+                </td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td colspan='2'>
+                  <p style='margin-left: 50px;'>
+                    นาย/นางสาว
+                    {{fname_TH}}
+                    {{lname_TH}}
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>รหัสนักศึกษา {{student_id}}</p>
+                </td>
+                <td>
+                  <p>หมู่เรียน {{student_group}}</p>
+                </td>
+                <td>
+                  <p>
+                    {{branch_name}}
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan='2'>
+                  <p>ชื่อ-นามสกุลอาจารย์ที่ปรึกษา นาย/นางสาว...............</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan='1'>
+                  <p>บัตรประชาชนเลขที่ {{id_card}}</p>
+                </td>
+                <td>
+                  <p>ออกให้ ณ {{issue_at}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>วันออกบัตร {{issue_date}}</p>
+                </td>
+                <td>
+                  <p>วันหมดอายุ {{ expiry_date }}.</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>เชื้อชาติ {{race}}</p>
+                </td>
+                <td>
+                  <p>สัญชาติ {{nationality}}</p>
+                </td>
+                <td>
+                  <p>ศาสนา {{religion}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>วันเกิด {{dateofbirth}} </p>
+                </td>
+                <td>
+                  <p></p>
+                </td>
+                <td>
+                  <p>อายุ {{age}} ปี</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>เพศ {{sex}}</p>
+                </td>
+                <td>
+                  <p>ส่วนสูง {{p_height}}</p>
+                </td>
+                <td>
+                  <p>น้ำหนัก {{p_weight}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>ที่อยู่ติดต่อได้ในภาคการศึกษานี้</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>เลขที่ {{address_no}}</p>
+                </td>
+                <td>
+                  <p>หมู่ {{moo}}</p>
+                </td>
+                <td>
+                  <p>ถนน {{road}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>ตำบล {{district}}</p>
+                </td>
+                <td>
+                  <p>อำเภอ {{sub_district}}</p>
+                </td>
+                <td>
+                  <p>จังหวัด {{province}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>รหัสไปรษณีย์ {{post_code}}</p>
+                </td>
+                <td>
+                  <p>เบอร์โทรศัพท์. {{tel}}</p>
+                </td>
+
+              </tr>
+              <tr>
+                <td>
+                  <p>อีเมล {{email}}</p>
+                </td>
+                <td>
+                  <p>Facebook {{facebook}}</p>
+                </td>
+              <tr>
+                <td>
+                  <p>บุคคลติดต่อได้ในกรณีฉุกเฉิน </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan='2'>
+                  <p>ชื่อ-นามสกุล นาย/นางสาว
+                    {{emergency_person_fname}}
+                    {{emergency_person_lname}}
+                  </p>
+                </td>
+                <td>
+                  <p>เบอร์โทร {{emergency_tel}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>ข้อมูลสถานประกอบการ</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>ชื่อสถานประกอบการ {{company_name}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>เลขที่..........</p>
+                </td>
+                <td>
+                  <p>หมู่..........</p>
+                </td>
+                <td>
+                  <p>ถนน..........</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>ตำบล..........</p>
+                </td>
+                <td>
+                  <p>อำเภอ..........</p>
+                </td>
+                <td>
+                  <p>จังหวัด..........</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>รหัสไปรษณีย์..........</p>
+                </td>
+                <td>
+                  <p>เบอร์โทรศัพท์ {{company_tel}}</p>
+                </td>
+              </tr>
+              </tr>
+              <tr>
+                <td>
+                  <p>
+                    ชื่อพี่เลี้ยง {{evaluator2}}
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>
+                    เริ่ม {{assessment_start}}
+                  </p>
+                </td>
+
+                <td>
+                  <p>
+                    อีเมล {{evaluator_email}}
+                  </p>
+                </td>
+
+              </tr>
+              <tr>
+                <td>
+                  <p>
+                    สิ้นสุด {{assessment_end}}
+                  </p>
+                </td>
+                <td>
+                  <p>
+                    เบอร์โทรศัพท์ {{ evaluator_tel }}
+                </td>
+              </tr>
+            </table>
+          </div>
+          {{#each diaryData}}
+          <div class='page-break'>
+            <div style='margin-top: 20px;'>
+              <p class='header3'>รายงานปฏิบัติงาน</p>
+            </div>
+            <table id='table2'>
+              <div style=''>
+              </div>
+              <tr>
+                <th style="width: 30%;"></th>
+                <th style="width: 30%;"></th>
+                <th style="width: 40%;"></th>
+              </tr>
+              <tr>
+                <td>
+                  <p>ชื่อ-นามสกุล {{ fname_TH }} {{ lname_TH }} </p>
+
+                </td>
+                <td colspan="1">
+                  <p id="branch">{{branch_name}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <p>สถานที่ฝึกงาน {{company_name}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>วันที่ {{diary_date}}</p>
+                </td>
+                <td>
+                  <p>เวลาที่เข้างาน {{time_in}}</p>
+                </td>
+                <td>       
+                  <p>เวลาออกงาน {{time_out}}</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan='2'>
+                  <p>รายละเอียด</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan='3'>
+                  {{#if diary_detail}}
+                  <div class="entry-content" style="width: 90%; height: auto;">
+                    {{{ diary_detail }}}
+                  </div>
+                  {{else}}
+                  <img src="path_to_your_image.jpg" alt="" style="width: 90%; height: 10cm;" />
+                  {{/if}}
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  <p style="margin-top: 50px;">คำแนะนำจากอาจารย์ </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  {{#if diary_comment}}
+                  <p>{{ diary_comment }} </p>
+                  {{else }}
+                  <p>
+                    ............................................................................................................................
+                  </p>
+                  {{/if }}
+
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  <p>คำแนะนำจากพี่เลี้ยง
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  {{#if diary_comment2 }}
+                  <p>{{ diary_comment2 }} </p>
+                  {{else }}
+                  <p>
+                    ............................................................................................................................
+                  </p>
+                  {{/if }}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </div>
+          {{/each}}
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+  <footer class='center'>
+  </footer>
+</body>
+
+</html>

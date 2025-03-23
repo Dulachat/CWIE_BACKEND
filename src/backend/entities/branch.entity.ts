@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Student } from './student.entity';
 import { Users } from './users.entity';
+import { EventsEntity } from './Events.entity';
 
 @Entity()
 export class Branch {
@@ -17,4 +18,8 @@ export class Branch {
     @OneToMany(()=>Users,(users)=>users.branchJoinUser,{ onDelete: "DEFAULT" })
     @JoinColumn()
     usersJoin:Users
+
+    @OneToMany(()=>EventsEntity,(event)=>event.branchJoinEvent,{ onDelete: "DEFAULT" })
+    @JoinColumn()
+    eventJoin:EventsEntity
 }

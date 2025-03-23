@@ -1,3 +1,4 @@
+import { status } from './entities/assessmentHeader.entity';
 /*
 https://docs.nestjs.com/providers#services
 */
@@ -17,163 +18,224 @@ import { FormInTP09 } from './entities/formintp09.entity';
 
 @Injectable()
 export class AssessmentService {
-    constructor(
-        @InjectRepository(AssessmentHeader)
-        private readonly assessmentRepository: Repository<AssessmentHeader>,
-        @InjectRepository(AssessmentDetail)
-        private readonly assessmentDetailRepository: Repository<AssessmentDetail>,
-        @InjectRepository(Student)
-        private readonly studentRepository: Repository<Student>,
-        @InjectRepository(Users)
-        private readonly usersRepository: Repository<Users>,
-        @InjectRepository(FormInTP08)
-        private form08Repository: Repository<FormInTP08>,
-        @InjectRepository(FormInTP09)
-        private form9Repository: Repository<FormInTP09>,
-    ) { }
+  constructor(
+    @InjectRepository(AssessmentHeader)
+    private readonly assessmentRepository: Repository<AssessmentHeader>,
+    @InjectRepository(AssessmentDetail)
+    private readonly assessmentDetailRepository: Repository<AssessmentDetail>,
+    @InjectRepository(Student)
+    private readonly studentRepository: Repository<Student>,
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
+    @InjectRepository(FormInTP08)
+    private form08Repository: Repository<FormInTP08>,
+    @InjectRepository(FormInTP09)
+    private form9Repository: Repository<FormInTP09>,
+  ) {}
 
-    //find
-
-    findHeader() {
-        return this.assessmentRepository.find()
+  async findHeader(body) {
+    const where = {};
+    if (body.status) {
+      Object.assign(where, { status: body.status });
     }
-    findOneHeader(status: string) {
-        return this.assessmentRepository.findOne({
-            where: { status: status }
-        })
+    if (body.term) {
+      Object.assign(where, { yearTerm: body.term });
     }
-    findOneDetail(id: any) {
-        return this.assessmentDetailRepository.findOne({
-            where: { student_id: id }
-        })
+    const data = await this.assessmentRepository.find({
+      order: { created_at: 'DESC' },
+      where: where,
+    });
+    return data;
+  }
+  async findOneHeader(status: string) {
+    return await this.assessmentRepository.find({
+      where: { status: status },
+    });
+  }
+  async findOneDetail(id: any) {
+    return await this.assessmentDetailRepository.findOne({
+      where: { student_id: id },
+    });
+  }
+  async findDetail(header_id: number) {
+    const data = await this.assessmentDetailRepository.find({
+      relations: {
+        JoinStudent: true,
+        JoinCompany: true,
+        JoinEvaluator1: true,
+        JoinEvaluator2: true,
+      },
+      where: {
+        header_id: header_id,
+      },
+      order: {
+        id: 'desc',
+      },
+    });
+    // Fetch all student data in parallel
+    const studentPromises = data.map(async (item) => {
+      const stuData = await this.studentRepository.findOne({
+        where: { id: item.student_id },
+        relations: ['branchJoin', 'address'],
+      });
+      item.JoinStudent = stuData;
+    });
+    // Fetch evaluator data in parallel using Promise.all
+    const evaluatorPromises = data.map(async (item) => {
+      if (item.JoinEvaluator1 != null) {
+        const userData = await this.usersRepository.findOne({
+          where: { id: item.evaluator1_id },
+          relations: ['branchJoinUser'],
+        });
+        item.JoinEvaluator1 = userData;
+      } else {
+        const userData = await this.usersRepository.findOne({
+          where: { id: item.evaluator2_id },
+          relations: ['companyJoin'],
+        });
+        item.JoinEvaluator2 = userData;
+      }
+    });
+    // Wait for all promises to resolve
+    await Promise.all([...studentPromises, ...evaluatorPromises]);
+    return data;
+  }
 
-    }
-    async findDetail() {
-        const data = await this.assessmentDetailRepository.find({
-            relations: { JoinStudent: true, JoinCompany: true, JoinEvaluator1: true, JoinEvaluator2: true },
-        })
-
-        for (let i in data) {
-            let stuData = await this.studentRepository.findOne({
-                where: { id: data[i].student_id },
-                relations: ["branchJoin", "address"]
-
-            })
-            data[i].JoinStudent = stuData
-        }
-
-        for (let i in data) {
-            if (data[i].JoinEvaluator1 != null) {
-                let userData = await this.usersRepository.findOne({
-                    where: { id: data[i].evaluator1_id },
-                    relations: ["branchJoinUser"]
-                })
-                data[i].JoinEvaluator1 = userData
-            } else {
-                let userData = await this.usersRepository.findOne({
-                    where: { id: data[i].evaluator2_id },
-                    relations: ["companyJoin"]
-                })
-                data[i].JoinEvaluator2 = userData
-            }
-
-        }
-        return data
-    }
-
- 
-
-    async findStudentForm08(id: number) {
-        const head = await this.assessmentRepository.findOne({
-            where: { status: '1' }
-        })
-
-        return await this.assessmentDetailRepository.find({
-            where: { header_id: head.id, evaluator1_id: id },
-            relations: ["JoinForm08", "JoinForm09", "JoinEvaluator1", "JoinStudent"]
-        })
-    }
-    async findStudentForm09(id: number) {
-        const head = await this.assessmentRepository.findOne({
-            where: { status: '1' }
-        })
-        return await this.assessmentDetailRepository.find({
-            where: { header_id: head.id, evaluator2_id: id },
-            relations: ["JoinForm09", "JoinForm08", "JoinEvaluator2", "JoinStudent"]
-        })
-        //   console.log(detail)
-    }
-
-    //add or create
-
-    async create(createAssessmentDto: CreateAssessmentDto) {
-        console.log(createAssessmentDto)
-        const check = await this.assessmentRepository.findOne({
-            where: {
-                assessment_name: createAssessmentDto.assessment_name
-            }
-        })
-        if (check != null) {
-            return "error"
-        } if (check === null) {
-
-            await this.assessmentRepository.save(createAssessmentDto)
-            return "success"
-        }
+  async findStudentForm08(id: number) {
+    const head = await this.assessmentRepository.find({
+      where: { status: '1' },
+    });
+    const data = [];
+    for (const item of head) {
+      const itemData = await this.assessmentDetailRepository.find({
+        where: { header_id: item.id, evaluator1_id: id },
+        relations: [
+          'JoinForm09',
+          'JoinForm08',
+          'JoinEvaluator1',
+          'JoinStudent',
+        ],
+      });
+      if (itemData && itemData.length > 0) {
+        data.push(itemData);
+      }
     }
 
-    async addDetail(createAssessmentDetailDto: CreateAssessmentDetailDto) {
-        const check = await this.assessmentDetailRepository.findOne({
-            where: { student_id: createAssessmentDetailDto.student_id }
-        })
-        if (check != null) {
-            return "error"
-        } if (check == null) {
-            const findStudent = await this.studentRepository.findOne({ where: { id: parseInt(createAssessmentDetailDto.student_id) } })
-            findStudent.waitings_status = "1"
-            await this.studentRepository.update(createAssessmentDetailDto.student_id, findStudent)
+    return data[0];
+  }
+  async findStudentForm09(id: number) {
+    const head = await this.assessmentRepository.find({
+      where: { status: '1' },
+    });
+    const data = [];
+    for (const item of head) {
+      const itemData = await this.assessmentDetailRepository.find({
+        where: { header_id: item.id, evaluator2_id: id },
+        relations: [
+          'JoinForm09',
+          'JoinForm08',
+          'JoinEvaluator2',
+          'JoinStudent',
+        ],
+      });
+      if (itemData && itemData.length > 0) {
+        data.push(itemData);
+      }
+    }
+    return data[0];
+  }
 
-            const form08 = new FormInTP08()
-            await this.form08Repository.manager.save(form08)
-            const form09 = new FormInTP09()
-            await this.form9Repository.manager.save(form09)
+  //add or create
 
-            const asDetail = new AssessmentDetail()
-            asDetail.header_id = createAssessmentDetailDto.header_id
-            asDetail.evaluator1_id = createAssessmentDetailDto.evaluator1_id
-            asDetail.student_id = createAssessmentDetailDto.student_id
-            asDetail.company_id = createAssessmentDetailDto.company_id
-            asDetail.JoinForm08 = form08
-            asDetail.JoinForm09 = form09
-            await this.assessmentDetailRepository.manager.save(asDetail)
-            return "success"
-        }
+  async create(createAssessmentDto: CreateAssessmentDto) {
+    const check = await this.assessmentRepository.findOne({
+      where: {
+        assessment_name: createAssessmentDto.assessment_name,
+      },
+    });
+    if (check != null) {
+      return 'error';
+    }
+    if (check === null) {
+      await this.assessmentRepository.save(createAssessmentDto);
+      return 'success';
+    }
+  }
 
+  async addDetail(createAssessmentDetailDto: CreateAssessmentDetailDto) {
+    try {
+      const check = await this.assessmentDetailRepository.findOne({
+        where: { student_id: createAssessmentDetailDto.student_id },
+      });
+      if (check != null) {
+        return 'error';
+      }
+      if (check == null) {
+        const findStudent = await this.studentRepository.findOne({
+          where: { id: parseInt(createAssessmentDetailDto.student_id) },
+        });
+        findStudent.waitings_status = '1';
+        await this.studentRepository.update(
+          createAssessmentDetailDto.student_id,
+          findStudent,
+        );
+
+        const form08 = new FormInTP08();
+        await this.form08Repository.save(form08);
+        const form09 = new FormInTP09();
+        await this.form9Repository.save(form09);
+
+        const asDetail = new AssessmentDetail();
+        asDetail.header_id = createAssessmentDetailDto.header_id;
+        asDetail.evaluator1_id = createAssessmentDetailDto.evaluator1_id;
+        asDetail.student_id = createAssessmentDetailDto.student_id;
+        asDetail.company_id = createAssessmentDetailDto.company_id;
+        asDetail.JoinForm08 = form08;
+        asDetail.JoinForm09 = form09;
+        await this.assessmentDetailRepository.save(asDetail);
+        return 'success';
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  //Update
+
+  updateDetail(id: number, updateAssessmentDetail: UpdateAssessmentDetail) {
+    return this.assessmentDetailRepository.update(id, updateAssessmentDetail);
+  }
+  async updateHeaders(id: number, updateAssessmentHeader: any) {
+    try {
+      await this.assessmentRepository.update(id, updateAssessmentHeader);
+      return {
+        status: 200,
+        message: 'success',
+      };
+    } catch (error) {
+      throw error;
     }
 
+    return;
+  }
+  //Delete
+  async removeDetail(id: number) {
+    const remove = await this.assessmentDetailRepository.findOne({
+      where: { id: id },
+    });
+    const setStudent = await this.studentRepository.findOne({
+      where: { id: remove.student_id },
+    });
+    setStudent.waitings_status = '0';
+    this.studentRepository.update(setStudent.id, setStudent);
+    return this.assessmentDetailRepository.remove(remove);
+  }
 
-    //Update
-
-    updateDetail(id: number, updateAssessmentDetail: UpdateAssessmentDetail) {
-
-        return this.assessmentDetailRepository.update(id, updateAssessmentDetail)
-
-    }
-    //Delete
-    async removeDetail(id: number) {
-        const remove = await this.assessmentDetailRepository.findOne({
-            where: { id: id }
-        })
-        const setStudent = await this.studentRepository.findOne({
-            where: { id: remove.student_id }
-        })
-        setStudent.waitings_status = "0"
-        this.studentRepository.update(setStudent.id, setStudent)
-        return this.assessmentDetailRepository.remove(remove)
-
-    }
-
-
-
-
+  async assesDetail(id: number) {
+    return this.assessmentDetailRepository.findOne({
+      where: { student_id: id },
+      relations: ['JoinCompany'],
+    });
+  }
 }

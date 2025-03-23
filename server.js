@@ -9,7 +9,6 @@ async function bootstrap() {
     app.use(cookieParser()); // Enable cookie parsing
     app.use(cors()); // Enable CORS
     // Additional server configurations can be done here
-
     await app.listen(3800);
 }
 bootstrap();

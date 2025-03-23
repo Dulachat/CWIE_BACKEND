@@ -15,8 +15,10 @@ import { FormInTP09 } from './entities/formintp09.entity';
 import { UsersService } from './users.service';
 import { FormQuestionModule } from './formQuestion/formQuestion.module';
 
+
 @Module({
-    imports: [FormQuestionModule,
+    imports: [
+FormQuestionModule,
 TypeOrmModule.forFeature([AssessmentHeader, AssessmentDetail, Student, Users, FormInTP08, FormInTP09])],
     controllers: [AssessmentController],
     providers: [UsersService,

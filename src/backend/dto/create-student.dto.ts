@@ -37,4 +37,6 @@ export class CreateStudentDto {
     province:string;
     intern_status:string;
     evaluator2_id:any;
+    year_class:string
+    address:any;
 }

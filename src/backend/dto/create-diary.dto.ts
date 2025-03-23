@@ -6,4 +6,5 @@ export class CreateDiaryDto {
     student_id: string;
     detail_text: string;
     diary_comment:string;
+    diary_comment2:string;
 }

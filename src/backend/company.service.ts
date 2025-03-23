@@ -1,6 +1,3 @@
-/*
-https://docs.nestjs.com/providers#services
-*/
 
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,49 +8,48 @@ import { Company } from './entities/company.entity';
 
 @Injectable()
 export class CompanyService {
-    constructor(
-        @InjectRepository(Company)
-        private companyRepository: Repository<Company>
-    ) { }
+  constructor(
+    @InjectRepository(Company)
+    private companyRepository: Repository<Company>,
+  ) {}
 
-    async create(createCompanyDto: CreateCompanyDto) {
-        const check = await this.companyRepository.findOne({
-            where: { company_name: createCompanyDto.company_name }
-        })
-        if (check != null) {
-            //  console.log(check)
-            return "error"
-        } if (check === null) {
-            this.companyRepository.save(createCompanyDto)
-            return "success"
-        }
-
+  async create(createCompanyDto: CreateCompanyDto) {
+    const check = await this.companyRepository.findOne({
+      where: { company_name: createCompanyDto.company_name },
+    });
+    if (check != null) {
+      //  console.log(check)
+      return 'error';
     }
-
-    findAll() {
-        return this.companyRepository.find();
+    if (check === null) {
+      await this.companyRepository.save(createCompanyDto);
+      return 'success';
     }
+  }
 
-    findOne(id: number) {
-        return this.companyRepository.findOne({
-            where: { id: id }
-        })
-    }
+  findAll() {
+    return this.companyRepository.find();
+  }
 
-    async update(id: number, updateCompanyDto: UpdateCompanyDto) {
-            await this.companyRepository.update(id, updateCompanyDto);
-            try{
-                return "success"
-            }catch(err){
-                return "error"
-            }
-          
-    }
+  findOne(id: number) {
+    return this.companyRepository.findOne({
+      where: { id: id },
+    });
+  }
 
-    async remove(id: number) {
-        const removeCompany = await this.companyRepository.findOne({
-            where: { id: id }
-        })
-        return this.companyRepository.remove(removeCompany)
+  async update(id: number, updateCompanyDto: UpdateCompanyDto) {
+    try {
+      await this.companyRepository.update(id, updateCompanyDto);
+      return 'success';
+    } catch (err) {
+      return 'err';
     }
+  }
+
+  async remove(id: number) {
+    const removeCompany = await this.companyRepository.findOne({
+      where: { id: id },
+    });
+    return this.companyRepository.remove(removeCompany);
+  }
 }

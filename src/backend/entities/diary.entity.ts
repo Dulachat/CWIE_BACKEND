@@ -23,7 +23,10 @@ export class Diary {
     student_id: string
 
     @Column({nullable:true})
-    diary_comment: string
+    diary_comment: string 
+
+    @Column({nullable:true})
+    diary_comment2: string 
 
     @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP", nullable: true })
     view_at: string
