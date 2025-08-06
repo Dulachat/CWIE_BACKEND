@@ -31,7 +31,7 @@ export class AssessmentService {
     private form08Repository: Repository<FormInTP08>,
     @InjectRepository(FormInTP09)
     private form9Repository: Repository<FormInTP09>,
-  ) {}
+  ) { }
 
   async findHeader(body) {
     const where = {};
@@ -120,7 +120,6 @@ export class AssessmentService {
         data.push(itemData);
       }
     }
-
     return data[0];
   }
   async findStudentForm09(id: number) {
