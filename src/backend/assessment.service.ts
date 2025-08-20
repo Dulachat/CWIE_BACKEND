@@ -15,6 +15,10 @@ import { Users } from './entities/users.entity';
 import { UpdateAssessmentDetail } from './dto/update-assessmentDetail.dto';
 import { FormInTP08 } from './entities/formintp08.entity';
 import { FormInTP09 } from './entities/formintp09.entity';
+import { UserAssessment } from './entities/UserAssessment.entity';
+import { RandomStringService } from './EventsStudent/randomstring.service';
+import { Company } from './entities/company.entity';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AssessmentService {
@@ -31,6 +35,11 @@ export class AssessmentService {
     private form08Repository: Repository<FormInTP08>,
     @InjectRepository(FormInTP09)
     private form9Repository: Repository<FormInTP09>,
+    @InjectRepository(UserAssessment)
+    private userAssessmentRepository: Repository<UserAssessment>,
+    private randomStringService: RandomStringService,
+    @InjectRepository(Company)
+    private companyRepository: Repository<Company>,
   ) { }
 
   async findHeader(body) {
@@ -89,11 +98,11 @@ export class AssessmentService {
         });
         item.JoinEvaluator1 = userData;
       } else {
-        const userData = await this.usersRepository.findOne({
+        const userAssessmentData = await this.userAssessmentRepository.findOne({
           where: { id: item.evaluator2_id },
           relations: ['companyJoin'],
         });
-        item.JoinEvaluator2 = userData;
+        item.JoinEvaluator2 = userAssessmentData;
       }
     });
     // Wait for all promises to resolve
@@ -167,12 +176,13 @@ export class AssessmentService {
         where: { student_id: createAssessmentDetailDto.student_id },
       });
       if (check != null) {
-        return 'error';
+        return { message: "already have", data: check };
       }
       if (check == null) {
         const findStudent = await this.studentRepository.findOne({
           where: { id: parseInt(createAssessmentDetailDto.student_id) },
         });
+
         findStudent.waitings_status = '1';
         await this.studentRepository.update(
           createAssessmentDetailDto.student_id,
@@ -184,14 +194,34 @@ export class AssessmentService {
         const form09 = new FormInTP09();
         await this.form9Repository.save(form09);
 
+
+        const findCompany = await this.companyRepository.findOne({
+          where: { id: createAssessmentDetailDto.company_id },
+        });
+        const password = this.randomStringService.generatePassword(8);
+        const userAssessment = new UserAssessment();
+        userAssessment.username = this.randomStringService.generateUsername(10);
+        userAssessment.pwd = await bcrypt.hash(password, 10);
+        userAssessment.rawPwd = password;
+        userAssessment.fname_TH = findCompany.company_name;
+        userAssessment.lname_TH = "-";
+        userAssessment.company_id = findCompany.id;
+        userAssessment.user_level_id = 3;
+        await this.userAssessmentRepository.save(userAssessment);
+
         const asDetail = new AssessmentDetail();
         asDetail.header_id = createAssessmentDetailDto.header_id;
         asDetail.evaluator1_id = createAssessmentDetailDto.evaluator1_id;
+        asDetail.evaluator2_id = userAssessment.id;
         asDetail.student_id = createAssessmentDetailDto.student_id;
         asDetail.company_id = createAssessmentDetailDto.company_id;
         asDetail.JoinForm08 = form08;
         asDetail.JoinForm09 = form09;
         await this.assessmentDetailRepository.save(asDetail);
+
+
+
+
         return 'success';
       }
     } catch (error) {
@@ -200,6 +230,18 @@ export class AssessmentService {
     }
   }
 
+  async updateDocument(student_id: number, body: any) {
+
+    const asDetail = await this.assessmentDetailRepository.findOne({
+      where: { student_id: student_id },
+    });
+    asDetail.documentLink = body.documentLink;
+    await this.assessmentDetailRepository.update(asDetail.id, asDetail);
+    return {
+      message: 'success',
+      data: asDetail,
+    };
+  }
   //Update
 
   updateDetail(id: number, updateAssessmentDetail: UpdateAssessmentDetail) {
@@ -236,5 +278,41 @@ export class AssessmentService {
       where: { student_id: id },
       relations: ['JoinCompany'],
     });
+  }
+
+  async getEvaluator(page: number = 1, limit: number = 10, year?: string) {
+
+    const query = this.userAssessmentRepository.createQueryBuilder('userAssessment')
+      .leftJoinAndSelect('userAssessment.companyJoin', 'company')
+      .leftJoinAndSelect('userAssessment.userLevelJoin', 'userLevel')
+      .leftJoinAndSelect('userLevel.userAssessmentJoin', 'userAssessmentJoin')
+      // .leftJoinAndSelect('userAssessmentJoin.header_id', 'header')
+      .orderBy('userAssessment.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    console.log(year, year)
+
+    if (year) {
+      query.where('userAssessment.created_at LIKE :year', { year: `%${year}%` })
+    }
+
+    const userAssessment = await query.getMany();
+
+    const assessmentDetail = await this.assessmentDetailRepository.find({
+      relations: ['JoinStudent', 'JoinEvaluator1', 'JoinEvaluator2'],
+    });
+
+    const students = await this.studentRepository.find({});
+
+    const merged = await Promise.all(
+      userAssessment.map(async (item) => {
+        const detail = assessmentDetail.find((d) => d.evaluator2_id === item.id);
+        const studentData = detail ? students.find((stu) => stu.id === detail.student_id) : undefined;
+        return { ...item, student: studentData };
+      })
+    );
+
+    return { success: true, data: merged }
   }
 }

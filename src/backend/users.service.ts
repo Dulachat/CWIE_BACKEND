@@ -5,13 +5,16 @@ import { CreateUsersDto } from './dto/create-users.dto';
 import { Users } from './entities/users.entity';
 import * as bcrypt from 'bcrypt';
 import { UpdateUsersDto } from './dto/update-users.dto';
+import { UserAssessment } from './entities/UserAssessment.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
-  ) {}
+    @InjectRepository(UserAssessment)
+    private readonly userAssessmentRepository: Repository<UserAssessment>
+  ) { }
 
   findAll() {
     return this.usersRepository.find({
@@ -33,11 +36,27 @@ export class UsersService {
     });
   }
 
+  findAuthAssessment(username: string) {
+    const userAssessment = this.userAssessmentRepository.findOne({
+      where: { username: username },
+      relations: ['companyJoin', 'userLevelJoin'],
+    });
+    return userAssessment
+  }
+
   async findOneUUID(uuid: string) {
-    const data = await this.usersRepository.findOne({
+    let data = null
+    data = await this.usersRepository.findOne({
       where: { uuid: uuid },
       relations: ['branchJoinUser', 'userLevelJoin', 'companyJoin'],
     });
+    if (!data) {
+      data = await this.userAssessmentRepository.findOne({
+        where: { uuid: uuid },
+        relations: ['companyJoin', 'userLevelJoin'],
+      });
+
+    }
     return data;
   }
 

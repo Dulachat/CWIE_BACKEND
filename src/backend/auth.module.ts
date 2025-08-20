@@ -4,6 +4,9 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { StudentModule } from './student.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Users } from './entities/users.entity';
+import { UserAssessment } from './entities/UserAssessment.entity';
 
 @Module({
     imports: [JwtModule.register(
@@ -11,7 +14,7 @@ import { StudentModule } from './student.module';
             secret: 'secret',
             signOptions: { expiresIn: "10h" }
         }
-    ), UsersModule, StudentModule],
+    ), UsersModule, StudentModule, TypeOrmModule.forFeature([Users, UserAssessment])],
     controllers: [AuthController],
     providers: [AuthService],
 })

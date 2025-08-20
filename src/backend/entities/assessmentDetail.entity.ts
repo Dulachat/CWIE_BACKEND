@@ -6,6 +6,7 @@ import { JoinAttribute } from 'typeorm/query-builder/JoinAttribute';
 import { Branch } from './branch.entity';
 import { FormInTP08 } from './formintp08.entity';
 import { FormInTP09 } from './formintp09.entity';
+import { UserAssessment } from './UserAssessment.entity';
 
 @Entity()
 export class AssessmentDetail {
@@ -37,6 +38,8 @@ export class AssessmentDetail {
     @Column({ type: 'timestamp', default: () => "CURRENT_TIMESTAMP" })
     created_at: string
 
+    @Column({ type: 'text', nullable: true })
+    documentLink: string
 
 
     @OneToOne(() => FormInTP08)
@@ -56,9 +59,9 @@ export class AssessmentDetail {
     @JoinColumn({ name: 'evaluator1_id', referencedColumnName: 'id' })
     JoinEvaluator1: Users
 
-    @ManyToOne(() => Users, (user) => user.JoinAssessmentDetail2, { cascade: true })
+    @ManyToOne(() => UserAssessment, (user) => user.JoinAssessmentDetail, { cascade: true, onDelete: 'SET NULL', nullable: true })
     @JoinColumn({ name: 'evaluator2_id', referencedColumnName: 'id' })
-    JoinEvaluator2: Users
+    JoinEvaluator2: UserAssessment
 
     @ManyToOne(() => Company, (company) => company.asJoin, { cascade: true })
     @JoinColumn({ name: 'company_id', referencedColumnName: "id" })

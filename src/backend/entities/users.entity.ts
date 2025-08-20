@@ -46,7 +46,7 @@ export class Users {
     @Column()
     user_level_id: string
 
-    @Column({nullable:true})
+    @Column({ nullable: true })
     profile_image: string
 
     @Column()
@@ -77,7 +77,7 @@ export class Users {
     @JoinColumn()
     JoinAssessmentDetail: AssessmentDetail[]
 
-    @OneToMany(() => AssessmentDetail, (asDetail) => asDetail.JoinEvaluator1, { onDelete: "CASCADE" })
+    @OneToMany(() => AssessmentDetail, (asDetail) => asDetail.JoinEvaluator2, { onDelete: "CASCADE" })
     @JoinColumn()
     JoinAssessmentDetail2: AssessmentDetail[]
 }

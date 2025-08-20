@@ -21,7 +21,7 @@ export class AssessmentController {
   constructor(
     private readonly assessmentService: AssessmentService,
     private readonly userService: UsersService,
-  ) {}
+  ) { }
 
   @Post('Head')
   create(@Body() createAssessmentDto: CreateAssessmentDto) {
@@ -105,5 +105,21 @@ export class AssessmentController {
     @Body() updateAssessmentHeader: CreateAssessmentDto,
   ) {
     return this.assessmentService.updateHeaders(id, updateAssessmentHeader);
+  }
+
+  @Patch('updateDocument/:studentId')
+  updateDocument(
+    @Param('studentId') studentId: number,
+    @Body() body: any,
+  ) {
+    return this.assessmentService.updateDocument(studentId, body);
+  }
+
+
+  @Get('getEvaluator')
+  getEvaluatorAssessment(@Query() query: any) {
+    const { page, limit, yearTerm } = query;
+    const res = this.assessmentService.getEvaluator(page, limit, yearTerm);
+    return res
   }
 }

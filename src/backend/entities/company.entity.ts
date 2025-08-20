@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { Users } from './users.entity';
 import { AssessmentDetail } from './assessmentDetail.entity';
+import { UserAssessment } from './UserAssessment.entity';
 
 @Entity()
 export class Company {
@@ -47,4 +48,11 @@ export class Company {
   })
   @JoinColumn()
   asJoin: AssessmentDetail;
+
+  @OneToMany(() => UserAssessment, (userAssessment) => userAssessment.companyJoin, {
+    onDelete: 'DEFAULT',
+    nullable: true,
+  })
+  @JoinColumn()
+  usersAssessmentJoin: UserAssessment;
 }

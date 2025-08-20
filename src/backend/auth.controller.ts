@@ -12,44 +12,73 @@ import { AuthService } from './auth.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
+import { UsersService } from './users.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private jwtService: JwtService,
-  ) {}
+    private readonly usersService: UsersService
+  ) { }
 
   @Post('login')
   async login(
-    @Body('username') username: string,
-    @Body('pwd') pwdData: string,
+    @Body() body: { pwd: string, type: string, username: string },
     @Res({ passthrough: true }) response: Response,
   ) {
     // login verification username and compare password
-    const user = await this.authService.findAuth({ username });
-    if (!user) {
-      throw new BadRequestException('invalid username');
-    }
-    if (!(await bcrypt.compare(pwdData, user.pwd))) {
-      throw new BadRequestException('invalid password');
-    }
-    const jwt = await this.jwtService.signAsync({
-      id: user.id,
-      username: user.username,
-    });
-    response.cookie('jwt', jwt, { httpOnly: true, expires: new Date() });
-    const data = await this.jwtService.verifyAsync(jwt);
-    if (!data) {
-      throw new UnauthorizedException();
-    }
-    const userData = await this.authService.findOne({
-      id: data['id'],
-      username: data['username'],
-    });
-    const { pwd, ...result } = userData;
 
-    return result;
+    if (body.type === 'company') {
+      console.log(body.username)
+      const user = await this.usersService.findAuthAssessment(body.username);
+      console.log(user)
+      if (!user) {
+        throw new BadRequestException('invalid username');
+      }
+      if (!(await bcrypt.compare(body.pwd, user.pwd))) {
+        throw new BadRequestException('invalid password');
+      }
+      const jwt = await this.jwtService.signAsync({
+        id: user.id,
+        username: user.username,
+      });
+      response.cookie('jwt', jwt, { httpOnly: true, expires: new Date() });
+      const data = await this.jwtService.verifyAsync(jwt);
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      const { pwd, ...result } = user;
+
+      return result;
+
+    } else {
+      const user = await this.authService.findAuth({ username: body.username });
+      if (!user) {
+        throw new BadRequestException('invalid username');
+      }
+      if (!(await bcrypt.compare(body.pwd, user.pwd))) {
+        throw new BadRequestException('invalid password');
+      }
+      const jwt = await this.jwtService.signAsync({
+        id: user.id,
+        username: user.username,
+      });
+      response.cookie('jwt', jwt, { httpOnly: true, expires: new Date() });
+      const data = await this.jwtService.verifyAsync(jwt);
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+      const userData = await this.authService.findOne({
+        id: data['id'],
+        username: data['username'],
+      });
+      const { pwd, ...result } = userData;
+
+      return result;
+    }
+
   }
 
   @Post('verified-password')
