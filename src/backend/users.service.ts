@@ -23,9 +23,9 @@ export class UsersService {
   }
 
   findUserCompany(id: any) {
-    return this.usersRepository.find({
+    return this.userAssessmentRepository.find({
       where: { company_id: id },
-      relations: ['companyJoin'],
+      relations: ['companyJoin', 'userLevelJoin'],
     });
   }
 

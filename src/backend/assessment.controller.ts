@@ -72,9 +72,9 @@ export class AssessmentController {
         const userCompany = await this.userService.findUserCompany(
           studentCompany.company_id,
         );
-        return { evaluator_2: studentCompany.evaluator2_id, data: userCompany };
+        res.json({ evaluator_2: studentCompany.evaluator2_id, data: userCompany });
       }
-      res.status(HttpStatus.UNAUTHORIZED);
+      res.status(HttpStatus.NO_CONTENT);
       return { success: false, message: 'User not found' };
     } catch (error) {
       throw new Error(error.message);
