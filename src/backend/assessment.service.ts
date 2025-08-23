@@ -274,10 +274,12 @@ export class AssessmentService {
   }
 
   async assesDetail(id: number) {
-    return this.assessmentDetailRepository.findOne({
+    const result = await this.assessmentDetailRepository.findOne({
       where: { student_id: id },
       relations: ['JoinCompany'],
     });
+
+    return result
   }
 
   async getEvaluator(page: number = 1, limit: number = 10, year?: string) {

@@ -25,7 +25,7 @@ export class DiaryService {
     private studentRepository: Repository<Student>,
     @InjectRepository(AssessmentDetail)
     private readonly assessmentDetailRepository: Repository<AssessmentDetail>,
-  ) {}
+  ) { }
 
   findAll(student_id: string) {
     return this.diaryRepository.find({
@@ -209,7 +209,7 @@ export class DiaryService {
         'assessmentDetail.evaluator1_id = evaluator1.id',
       )
       .leftJoin(
-        `users`,
+        `user_assessment`,
         'evaluator2',
         'assessmentDetail.evaluator2_id = evaluator2.id',
       )
@@ -230,15 +230,16 @@ export class DiaryService {
       time_out: entry.time_out || '................',
       fname_TH: student.fname_TH ? student.fname_TH : '..................',
       lname_TH: student.lname_TH ? student.lname_TH : '..................',
-      company_name: assessmentData.company_name
-        ? assessmentData.company_name
+      company_name: assessmentData?.company_name
+        ? assessmentData?.company_name
         : '..............................',
       diary_detail:
         entry.diary_detail !== `<p><br></p>` ? entry.diary_detail : null,
       diary_comment: entry.diary_comment || null,
       diary_comment2: entry.diary_comment2 || null,
     }));
-    const parts = assessmentData.year_term.split('/');
+    const parts = assessmentData?.year_term?.split('/');
+
     const year = parts[1];
     Object.assign(studentData, {
       term_year: year || '.............',
@@ -280,8 +281,8 @@ export class DiaryService {
         ? student.sex === 'male'
           ? 'ชาย'
           : student.sex === 'female'
-          ? 'หญิง'
-          : '........'
+            ? 'หญิง'
+            : '........'
         : '........',
       p_height: student.p_height ? student.p_height : '........',
       p_weight: student.p_weight ? student.p_weight : '........',
