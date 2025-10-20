@@ -19,6 +19,7 @@ import { Diary } from './diary.entity';
 import { EventsEntity } from './Events.entity';
 import { EventTokenEntity } from './EventToken.entity';
 import { EventStudent } from './EventStudent.entity';
+import { formQuestion } from './formQuestionnaire';
 
 export enum InternStatus {
   CooperativeEducation = '0', //สหกิจ
@@ -181,4 +182,9 @@ export class Student {
     onDelete: 'SET NULL',
   })
   event: EventStudent;
+
+  @OneToMany(() => formQuestion, (formQuestion) => formQuestion.student, {
+    onDelete: 'SET NULL',
+  })
+  formQuestion: formQuestion[];
 }

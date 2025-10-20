@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Post, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Patch, Query } from '@nestjs/common';
 import { FormQuestionService } from './formQuestion.service';
 import { CreateQuestionDto } from '../dto/create-formQusetion.dto';
 
 @Controller('formQuestion')
 export class FormQuestionController {
-  constructor(private formQuestionService: FormQuestionService) {}
+  constructor(private formQuestionService: FormQuestionService) { }
 
   @Post('create')
   async createFormQuestion(@Body() createQuestionDto: CreateQuestionDto) {
@@ -24,6 +24,117 @@ export class FormQuestionController {
       return allQuestion;
     } catch (error) {
       throw error;
+    }
+  }
+
+  @Get('/all')
+  async getAllFormQuestions(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('academicYear') academicYear?: string
+  ) {
+    try {
+      const pageNum = page ? parseInt(page) : undefined;
+      const limitNum = limit ? parseInt(limit) : undefined;
+
+      // ตรวจสอบ academicYear format
+      if (academicYear && (!/^\d{4}$/.test(academicYear.trim()))) {
+        return {
+          success: false,
+          message: 'ปีการศึกษาต้องเป็นตัวเลข 4 หลัก (เช่น 2564)',
+          error: 'Invalid academicYear format',
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      const result = await this.formQuestionService.getAllFormQuestions(pageNum, limitNum, academicYear);
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: 'เกิดข้อผิดพลาดในการดึงข้อมูล',
+        error: error.message
+      };
+    }
+  }
+
+  @Get('/search')
+  async searchFormQuestions(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('schoolType') schoolType?: string,
+    @Query('academicYear') academicYear?: string
+  ) {
+    try {
+      // แปลง string เป็น number และตรวจสอบความถูกต้อง
+      let pageNum: number | undefined;
+      let limitNum: number = 10;
+
+      if (page) {
+        pageNum = parseInt(page);
+        if (isNaN(pageNum) || pageNum < 1) {
+          return {
+            success: false,
+            message: 'หมายเลขหน้าต้องเป็นตัวเลขที่มากกว่า 0',
+            error: 'Invalid page parameter',
+            timestamp: new Date().toISOString()
+          };
+        }
+      }
+
+      if (limit) {
+        limitNum = parseInt(limit);
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+          return {
+            success: false,
+            message: 'จำนวนรายการต่อหน้าต้องเป็นตัวเลขระหว่าง 1-100',
+            error: 'Invalid limit parameter',
+            timestamp: new Date().toISOString()
+          };
+        }
+      }
+
+      // ตรวจสอบ academicYear format
+      if (academicYear && (!/^\d{4}$/.test(academicYear.trim()))) {
+        return {
+          success: false,
+          message: 'ปีการศึกษาต้องเป็นตัวเลข 4 หลัก (เช่น 2564)',
+          error: 'Invalid academicYear format',
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      const result = await this.formQuestionService.searchFormQuestions(
+        search,
+        pageNum,
+        limitNum,
+        schoolType,
+        academicYear
+      );
+
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: 'เกิดข้อผิดพลาดในการค้นหา',
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  @Get('/statistics')
+  async getStatistics() {
+    try {
+      const result = await this.formQuestionService.getStatistics();
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        message: 'เกิดข้อผิดพลาดในการดึงสถิติ',
+        error: error.message
+      };
     }
   }
 

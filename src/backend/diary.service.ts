@@ -303,8 +303,10 @@ export class DiaryService {
   async generatePdf(htmlTemplate: string, data: any) {
     try {
       const template = await handlebars.compile(htmlTemplate);
-      this.logger.debug(`Generating PDF ${process.env.CH_PATH} `);
+      // this.logger.debug(`Generating PDF ${process.env.CH_PATH} `);
       const html = await template(data);
+
+      console.log(html)
       const pathExecute = await path.join(
         process.cwd(),
         process.env.CHROME_PATH,
@@ -316,6 +318,21 @@ export class DiaryService {
       });
       const page = await browser.newPage();
       await page.setContent(html, data);
+
+      // รอให้รูปภาพโหลดเสร็จ
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // หรือรอให้รูปภาพโหลดเสร็จ
+      await page.evaluate(() => {
+        return Promise.all(
+          Array.from(document.images)
+            .filter(img => !img.complete)
+            .map(img => new Promise(resolve => {
+              img.onload = img.onerror = resolve;
+            }))
+        );
+      });
+
       const printOptions = {
         printBackground: true,
         margin: {

@@ -1,39 +1,41 @@
+
+
 export class CreateQuestionDto {
-    student_id: string;
+    student_id: number;
     old_school: string;
-    province: string;
     district: string;
+    province: string;
     school_type: string;
     grade: string;
     parents_occupation: string;
     earnings: string;
     f_academy: number;
-    f_a1: number
-    f_a2: number
-    f_a3: number
-    f_a4: number
-    f_a5: number
-    f_finance: number
-    f_f1: number
-    f_f2: number
-    f_f3: number
-    f_f4: number
-    f_course: number
-    f_c1: number
-    f_c2: number
-    f_c3: number
-    f_c4: number
-    f_c5: number
-    f_family: number
-    f_fa1: number
-    f_fa2: number
-    f_fa3: number
-    f_society: number
-    f_s1: number
-    f_s2: number
-    f_s3: number
-    f_s4: number
-    f_s5: number
-    f_public_relation: string
-    status: string
+    f_a1: number;
+    f_a2: number;
+    f_a3: number;
+    f_a4: number;
+    f_a5: number;
+    f_finance: number;
+    f_f1: number;
+    f_f2: number;
+    f_f3: number;
+    f_f4: number;
+    f_course: number;
+    f_c1: number;
+    f_c2: number;
+    f_c3: number;
+    f_c4: number;
+    f_c5: number;
+    f_family: number;
+    f_fa1: number;
+    f_fa2: number;
+    f_fa3: number;
+    f_society: number;
+    f_s1: number;
+    f_s2: number;
+    f_s3: number;
+    f_s4: number;
+    f_s5: number;
+    f_public_relation: string;
+    status: string;
 }

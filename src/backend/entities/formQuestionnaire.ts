@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -17,7 +18,12 @@ export class formQuestion {
   @PrimaryGeneratedColumn()
   id: number;
   @Column({ nullable: true })
-  student_id: string;
+  student_id: number;
+
+  @ManyToOne(() => Student, (student) => student.id)
+  @JoinColumn({ name: 'student_id' })
+  student: Student;
+
   @Column()
   old_school: string;
   @Column()

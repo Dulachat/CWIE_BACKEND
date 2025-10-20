@@ -171,33 +171,51 @@ export class AssessmentService {
   }
 
   async addDetail(createAssessmentDetailDto: CreateAssessmentDetailDto) {
-    try {
-      const check = await this.assessmentDetailRepository.findOne({
-        where: { student_id: createAssessmentDetailDto.student_id },
-      });
-      if (check != null) {
-        return { message: "already have", data: check };
-      }
-      if (check == null) {
-        const findStudent = await this.studentRepository.findOne({
+    // ใช้ Database Transaction เพื่อป้องกัน Race Condition
+    return await this.assessmentDetailRepository.manager.transaction(async (transactionalEntityManager) => {
+      try {
+        // ตรวจสอบว่ามี student_id อยู่แล้วหรือไม่
+        const check = await transactionalEntityManager.findOne(AssessmentDetail, {
+          where: { student_id: createAssessmentDetailDto.student_id },
+        });
+
+        if (check != null) {
+          return { message: "already have", data: check };
+        }
+
+        // ตรวจสอบและหา Student
+        const findStudent = await transactionalEntityManager.findOne(Student, {
           where: { id: parseInt(createAssessmentDetailDto.student_id) },
         });
 
-        findStudent.waitings_status = '1';
-        await this.studentRepository.update(
-          createAssessmentDetailDto.student_id,
-          findStudent,
-        );
+        if (!findStudent) {
+          throw new Error(`Student with id ${createAssessmentDetailDto.student_id} not found`);
+        }
 
-        const form08 = new FormInTP08();
-        await this.form08Repository.save(form08);
-        const form09 = new FormInTP09();
-        await this.form9Repository.save(form09);
-
-
-        const findCompany = await this.companyRepository.findOne({
+        // ตรวจสอบและหา Company
+        const findCompany = await transactionalEntityManager.findOne(Company, {
           where: { id: createAssessmentDetailDto.company_id },
         });
+
+        if (!findCompany) {
+          throw new Error(`Company with id ${createAssessmentDetailDto.company_id} not found`);
+        }
+
+        // อัพเดท student status
+        findStudent.waitings_status = '1';
+        await transactionalEntityManager.update(Student,
+          parseInt(createAssessmentDetailDto.student_id),
+          { waitings_status: '1' }
+        );
+
+        // สร้าง Form08 และ Form09
+        const form08 = new FormInTP08();
+        const savedForm08 = await transactionalEntityManager.save(FormInTP08, form08);
+
+        const form09 = new FormInTP09();
+        const savedForm09 = await transactionalEntityManager.save(FormInTP09, form09);
+
+        // สร้าง UserAssessment
         const password = this.randomStringService.generatePassword(8);
         const userAssessment = new UserAssessment();
         userAssessment.username = this.randomStringService.generateUsername(10);
@@ -205,29 +223,27 @@ export class AssessmentService {
         userAssessment.rawPwd = password;
         userAssessment.fname_TH = findCompany.company_name;
         userAssessment.lname_TH = "-";
-        userAssessment.company_id = findCompany.id;
+        userAssessment.company_id = findCompany.id; // แน่นอนว่าไม่เป็น null
         userAssessment.user_level_id = 3;
-        await this.userAssessmentRepository.save(userAssessment);
+        const savedUserAssessment = await transactionalEntityManager.save(UserAssessment, userAssessment);
 
+        // สร้าง AssessmentDetail พร้อมการแมพที่ถูกต้อง
         const asDetail = new AssessmentDetail();
         asDetail.header_id = createAssessmentDetailDto.header_id;
         asDetail.evaluator1_id = createAssessmentDetailDto.evaluator1_id;
-        asDetail.evaluator2_id = userAssessment.id;
+        asDetail.evaluator2_id = savedUserAssessment.id;
         asDetail.student_id = createAssessmentDetailDto.student_id;
         asDetail.company_id = createAssessmentDetailDto.company_id;
-        asDetail.JoinForm08 = form08;
-        asDetail.JoinForm09 = form09;
-        await this.assessmentDetailRepository.save(asDetail);
-
-
-
+        asDetail.form08Id = savedForm08.id.toString(); // แปลงเป็น string
+        asDetail.form09Id = savedForm09.id.toString(); // แปลงเป็น string
+        await transactionalEntityManager.save(AssessmentDetail, asDetail);
 
         return 'success';
+      } catch (error) {
+        console.log('Error in addDetail:', error);
+        throw error;
       }
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+    });
   }
 
   async updateDocument(student_id: number, body: any) {
