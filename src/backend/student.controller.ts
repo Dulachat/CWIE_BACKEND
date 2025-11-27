@@ -14,7 +14,7 @@ import { StudentService } from './student.service';
 
 @Controller('student')
 export class StudentController {
-  constructor(private readonly studentService: StudentService) {}
+  constructor(private readonly studentService: StudentService) { }
 
   @Get('allStudent')
   findAll() {
@@ -57,7 +57,7 @@ export class StudentController {
     return this.studentService.create(createStudentDto);
   }
 
-  @Patch('updateStudent/:id/:uuid')
+  @Patch('updateStudent/:uuid')
   async update(
     @Param('id') id: number,
     @Param('uuid') uuid: string,

@@ -17,7 +17,7 @@ export class StudentService {
     private StudentAddressRepository: Repository<studentAddress>,
     @InjectRepository(AssessmentDetail)
     private readonly assessmentDetailRepository: Repository<AssessmentDetail>,
-  ) {}
+  ) { }
 
   findAll() {
     return this.StudentRepository.find({
@@ -115,7 +115,7 @@ export class StudentService {
   ) {
     //check username and studentId
     const findId = await this.StudentRepository.findOne({
-      where: { id: id },
+      where: { uuid: uuid },
       relations: ['address'],
     });
     const updateAddress = new studentAddress();

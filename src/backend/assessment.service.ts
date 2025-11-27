@@ -111,46 +111,44 @@ export class AssessmentService {
   }
 
   async findStudentForm08(id: number) {
-    const head = await this.assessmentRepository.find({
-      where: { status: '1' },
-    });
-    const data = [];
-    for (const item of head) {
-      const itemData = await this.assessmentDetailRepository.find({
-        where: { header_id: item.id, evaluator1_id: id },
-        relations: [
-          'JoinForm09',
-          'JoinForm08',
-          'JoinEvaluator1',
-          'JoinStudent',
-        ],
-      });
-      if (itemData && itemData.length > 0) {
-        data.push(itemData);
-      }
-    }
-    return data[0];
+    // ใช้ QueryBuilder เพื่อ join table และลดจำนวน query จาก N+1 queries เป็น 1 query
+    const result = await this.assessmentDetailRepository
+      .createQueryBuilder('detail')
+      .leftJoinAndSelect('detail.JoinForm08', 'form08')
+      .leftJoinAndSelect('detail.JoinForm09', 'form09')
+      .leftJoinAndSelect('detail.JoinEvaluator1', 'evaluator1')
+      .leftJoinAndSelect('detail.JoinStudent', 'student')
+      .innerJoin(
+        AssessmentHeader,
+        'header',
+        'header.id = detail.header_id AND header.status = :status',
+        { status: '1' },
+      )
+      .where('detail.evaluator1_id = :id', { id })
+      .orderBy('detail.id', 'DESC')
+      .getMany();
+
+    return result.length > 0 ? result : null;
   }
   async findStudentForm09(id: number) {
-    const head = await this.assessmentRepository.find({
-      where: { status: '1' },
-    });
-    const data = [];
-    for (const item of head) {
-      const itemData = await this.assessmentDetailRepository.find({
-        where: { header_id: item.id, evaluator2_id: id },
-        relations: [
-          'JoinForm09',
-          'JoinForm08',
-          'JoinEvaluator2',
-          'JoinStudent',
-        ],
-      });
-      if (itemData && itemData.length > 0) {
-        data.push(itemData);
-      }
-    }
-    return data[0];
+    // ใช้ QueryBuilder เพื่อ join table และลดจำนวน query จาก N+1 queries เป็น 1 query
+    const result = await this.assessmentDetailRepository
+      .createQueryBuilder('detail')
+      .leftJoinAndSelect('detail.JoinForm08', 'form08')
+      .leftJoinAndSelect('detail.JoinForm09', 'form09')
+      .leftJoinAndSelect('detail.JoinEvaluator2', 'evaluator2')
+      .leftJoinAndSelect('detail.JoinStudent', 'student')
+      .innerJoin(
+        AssessmentHeader,
+        'header',
+        'header.id = detail.header_id AND header.status = :status',
+        { status: '1' },
+      )
+      .where('detail.evaluator2_id = :id', { id })
+      .orderBy('detail.id', 'DESC')
+      .getMany();
+
+    return result.length > 0 ? result : null;
   }
 
   //add or create
@@ -298,7 +296,7 @@ export class AssessmentService {
     return result
   }
 
-  async getEvaluator(page: number = 1, limit: number = 10, year?: string) {
+  async getEvaluator(page: number, limit: number, year?: string) {
 
     const query = this.userAssessmentRepository.createQueryBuilder('userAssessment')
       .leftJoinAndSelect('userAssessment.companyJoin', 'company')
@@ -309,11 +307,11 @@ export class AssessmentService {
       .skip((page - 1) * limit)
       .take(limit);
 
-    console.log(year, year)
-
     if (year) {
       query.where('userAssessment.created_at LIKE :year', { year: `%${year}%` })
     }
+
+    const total = await query.getCount();
 
     const userAssessment = await query.getMany();
 
@@ -331,6 +329,6 @@ export class AssessmentService {
       })
     );
 
-    return { success: true, data: merged }
+    return { success: true, data: merged, total: total }
   }
 }
