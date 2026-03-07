@@ -18,7 +18,7 @@ import { FormInTP09 } from './entities/formintp09.entity';
 import { UserAssessment } from './entities/UserAssessment.entity';
 import { RandomStringService } from './EventsStudent/randomstring.service';
 import { Company } from './entities/company.entity';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AssessmentService {
@@ -141,14 +141,22 @@ export class AssessmentService {
       .innerJoin(
         AssessmentHeader,
         'header',
-        'header.id = detail.header_id AND header.status = :status',
-        { status: '1' },
+        'header.id = detail.header_id',
+        // { status: '1' }, // fix bug  24 Feb
       )
       .where('detail.evaluator2_id = :id', { id })
       .orderBy('detail.id', 'DESC')
       .getMany();
 
-    return result.length > 0 ? result : null;
+    // console.log(result)
+
+    if (result) {
+      return result
+    }
+
+    return null
+
+
   }
 
   //add or create

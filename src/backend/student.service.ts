@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { studentAddress } from './entities/studentaddress.entity';
 import { Student } from './entities/student.entity';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { AssessmentDetail } from './entities/assessmentDetail.entity';
 

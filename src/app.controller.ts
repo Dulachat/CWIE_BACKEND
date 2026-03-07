@@ -1,13 +1,9 @@
-import {
-  Controller,
-  Get,
-  Request,
-  Post,
-  UseGuards,
-  Param,
-  Res,
-} from '@nestjs/common';
+import { Controller, Get, Param, Res } from '@nestjs/common';
+import * as path from 'path';
+import { existsSync } from 'fs';
 import { AppService } from './app.service';
+
+const UPLOADS_ROOT = './uploads';
 
 @Controller('api')
 export class AppController {
@@ -19,7 +15,11 @@ export class AppController {
   }
 
   @Get('uploads/:image')
-  getImage(@Param('image') image, @Res() res) {
-    return res.sendFile(image, { root: './uploads' });
+  getImage(@Param('image') image: string, @Res() res: any) {
+    const filePath = path.join(UPLOADS_ROOT, image);
+    if (!existsSync(filePath)) {
+      return res.status(404).send('Not found');
+    }
+    return res.sendFile(image, { root: UPLOADS_ROOT });
   }
 }

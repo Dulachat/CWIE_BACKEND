@@ -170,6 +170,9 @@ export class DiaryService {
       .leftJoin('branch', 'branch', 'branch.id = s.branch_id')
       .where(`s.uuid = :uuid`, { uuid })
       .getRawOne();
+    if (!student) {
+      throw new Error(`Student not found: ${uuid}`);
+    }
     const diaryData = await this.diaryRepository
       .createQueryBuilder('d')
       .select([
@@ -239,8 +242,7 @@ export class DiaryService {
       diary_comment2: entry.diary_comment2 || null,
     }));
     const parts = assessmentData?.year_term?.split('/');
-
-    const year = parts[1];
+    const year = parts?.[1];
     Object.assign(studentData, {
       term_year: year || '.............',
       title_name: student.title_name || '........',
@@ -301,53 +303,36 @@ export class DiaryService {
   }
 
   async generatePdf(htmlTemplate: string, data: any) {
+    let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
     try {
-      const template = await handlebars.compile(htmlTemplate);
-      // this.logger.debug(`Generating PDF ${process.env.CH_PATH} `);
-      const html = await template(data);
-
-      console.log(html)
-      const pathExecute = await path.join(
-        process.cwd(),
-        process.env.CHROME_PATH,
-      );
-      const browser = await puppeteer.launch({
-        executablePath: pathExecute,
+      const html = handlebars.compile(htmlTemplate)(data);
+      const launchOptions: Parameters<typeof puppeteer.launch>[0] = {
         headless: true,
-        args: ['--no-sandbox'],
-      });
-      const page = await browser.newPage();
-      await page.setContent(html, data);
-
-      // รอให้รูปภาพโหลดเสร็จ
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // หรือรอให้รูปภาพโหลดเสร็จ
-      await page.evaluate(() => {
-        return Promise.all(
-          Array.from(document.images)
-            .filter(img => !img.complete)
-            .map(img => new Promise(resolve => {
-              img.onload = img.onerror = resolve;
-            }))
-        );
-      });
-
-      const printOptions = {
-        printBackground: true,
-        margin: {
-          top: '1cm',
-          right: '1cm',
-          bottom: '1cm',
-          left: '1cm',
-        },
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       };
-      this.logger.debug('printOptions');
-      const pdfBuffer = await page.pdf(printOptions);
-      await browser.close();
+      if (process.env.CHROME_PATH) {
+        launchOptions.executablePath = path.join(
+          process.cwd(),
+          process.env.CHROME_PATH,
+        );
+      }
+      browser = await puppeteer.launch(launchOptions);
+      const page = await browser.newPage();
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+        timeout: 10000,
+      });
+
+      const pdfBuffer = await page.pdf({
+        printBackground: true,
+        margin: { top: '1cm', right: '1cm', bottom: '1cm', left: '1cm' },
+      });
       return pdfBuffer;
     } catch (error) {
       this.logger.error(error);
+      throw error;
+    } finally {
+      if (browser) await browser.close();
     }
   }
 

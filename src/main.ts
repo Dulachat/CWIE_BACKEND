@@ -1,3 +1,8 @@
+// Polyfill ReadableStream สำหรับ Node 16 (Puppeteer page.pdf ต้องการ)
+if (typeof globalThis.ReadableStream === 'undefined') {
+  require('web-streams-polyfill/polyfill');
+}
+
 import { NestFactory } from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';

@@ -14,7 +14,6 @@ import {
   Res,
   Query,
   Req,
-  StreamableFile,
 } from '@nestjs/common';
 import { DiaryService } from './diary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -24,7 +23,6 @@ import * as path from 'path';
 import { Response } from 'express';
 import { PinoLogger } from 'util/logger';
 import * as fs from 'fs';
-import { error } from 'console';
 @Controller('Diary')
 export class DiaryController {
   constructor(
@@ -52,8 +50,9 @@ export class DiaryController {
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
       storage: diskStorage({
-        destination: './uploads',
+        destination: path.join(process.cwd(), 'uploads'),
         filename: (req, file, cb) => {
           const randomName = Array(32)
             .fill(null)
@@ -64,22 +63,13 @@ export class DiaryController {
       }),
     }),
   )
-  async uploadFile(@UploadedFile() file) {
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
     try {
-      // const resizedImageBuffer = await sharp(file.path)
-      //   .resize(640, 640)
-      //   .toBuffer();
-      // const resizedFileName = `img_${file.filename}`;
-      // const resizedFilePath = `./uploads/${resizedFileName}`;
-      // fs.writeFileSync(resizedFilePath, resizedImageBuffer);
-      // const res = JSON.stringify({
-      //   path: ``,
-      //   original: file.path,
-      // });
-      return `${process.env.CWIE_API_URL}/Diary/${file.path}`;
+      if (!file) throw new Error('No file uploaded');
+      return `${process.env.CWIE_API_URL}/Diary/uploads/${file.filename}`;
     } catch (error) {
-      console.error('Error processing file:', error);
-      return 'Error processing file.';
+      this.logger.error(error);
+      throw new Error('Error processing file.');
     }
   }
 
@@ -92,8 +82,9 @@ export class DiaryController {
   }
 
   @Get('uploads/:image')
-  getImage(@Param('image') image, @Res() res) {
-    return res.sendFile(image, { root: './uploads' });
+  getImage(@Param('image') image: string, @Res() res: Response) {
+    const root = path.join(process.cwd(), 'uploads');
+    return res.sendFile(image, { root });
   }
 
   @Get('allDiary/:student_id')
@@ -137,27 +128,37 @@ export class DiaryController {
   }
 
   @Get('/export/:id')
-  async export(
-    @Param('id') uuid: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const studentData = await this.diaryService.getDataReport(uuid);
-    const html = fs.readFileSync(
-      path.join(__dirname, '../../html/diaryTemplate.hbs'),
-    );
-    this.logger.debug(path.join(__dirname, '../../html/diaryTemplate.hbs'));
-    const fileBuffer = await this.diaryService.generatePdf(
-      html.toString(),
-      studentData,
-    );
-    if (fileBuffer) {
-      const file = new StreamableFile(fileBuffer);
-      res.setHeader('Content-Disposition', `attachment; filename="pdf.pdf"`);
+  async export(@Param('id') uuid: string, @Res() res: Response) {
+    try {
+      const studentData = await this.diaryService.getDataReport(uuid);
+      const templatePath = path.join(__dirname, '../../html/diaryTemplate.hbs');
+      const html = fs.readFileSync(templatePath, 'utf-8');
+      const fileBuffer = await this.diaryService.generatePdf(
+        html,
+        studentData,
+      );
+      if (!fileBuffer) {
+        res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'PDF generation failed',
+        });
+        return;
+      }
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="diary-${uuid}.pdf"`,
+      );
       res.setHeader('Content-Type', 'application/pdf');
-      this.logger.log(`Get student information ${uuid}`);
-      return file;
+      res.setHeader('Content-Length', String(fileBuffer.length));
+      res.setHeader('Cache-Control', 'no-cache, no-store');
+      this.logger.log(`Export student diary ${uuid}`);
+      res.end(fileBuffer);
+    } catch (error) {
+      this.logger.error(error);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error?.message || 'Export failed',
+      });
     }
-    res.status(HttpStatus.BAD_REQUEST);
-    return { success: false };
   }
 }
